@@ -11,10 +11,10 @@ def f(xy: tuple):
 
 
 class TestData1(Dataset):
-    def __init__(self, transform=None, target_transform=None):
+    def __init__(self, seed=0, transform=None, target_transform=None):
         self.transform = transform
         self.target_transform = target_transform
-        torch.random.manual_seed(0)
+        torch.random.manual_seed(seed)
         self._features = 2 * torch.rand((2, 200)) - 1
         self._targets = f(self._features)
 
