@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def f(xy: tuple):
-    x, y = xy
-    return y ** 2 + (x * y) + np.cos(np.pi * x) ** 2
-
-
 class TestData1(Dataset):
+    @staticmethod
+    def f(xy: tuple):
+        x, y = xy
+        return y ** 2 + (x * y) + np.cos(np.pi * x) ** 2
+
     def __init__(self, seed=0, transform=None, target_transform=None):
         self.transform = transform
         self.target_transform = target_transform
         torch.random.manual_seed(seed)
         self._features = 2 * torch.rand((2, 200)) - 1
-        self._targets = f(self._features)
+        self._targets = self.f(self._features)
 
     def __len__(self):
         return self._targets.shape[0]
@@ -27,15 +27,20 @@ class TestData1(Dataset):
     def features(self):
         return self._features.clone()
 
+    def f_plot(self, f=None, show_data=False):
+        if not f:
+            f = self.f
+        support = np.linspace(-1, 1, 101)
+        x, y = np.meshgrid(support, support)
+        z = f((x, y))
+        plt.pcolor(support, support, z)
+        plt.colorbar()
+        plt.axis('square')
+        if show_data:
+            plt.plot(self._features[0], self._features[1], 'w.')
+        plt.show()
+
 
 if __name__ == "__main__":
-    support = np.linspace(-1, 1, 101)
-    x, y = np.meshgrid(support, support)
-    z_truth = f((x, y))
-    plt.pcolor(x[0, :], y[:, 0], z_truth)
-    plt.colorbar()
-    plt.axis('square')
-    test_data = TestData1()
-    test_xy = test_data.features()
-    plt.plot(test_xy[0], test_xy[1], 'w.')
-    plt.show()
+    data = TestData1()
+    data.f_plot(show_data=True)
