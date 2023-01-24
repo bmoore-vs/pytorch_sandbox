@@ -44,9 +44,46 @@ class TestData1(Dataset):
             plt.show()
 
 
+class TestData2(Dataset):
+    @staticmethod
+    def f(x):
+        return (x - 0.5) * x * (x + 0.2)
+
+    def __init__(self, seed=0, transform=None, target_transform=None):
+        self.transform = transform
+        self.target_transform = target_transform
+        torch.random.manual_seed(seed)
+        self._features = 2 * torch.rand(20) - 1
+        self._targets = self.f(self._features)
+
+    def __len__(self):
+        return self._targets.shape[0]
+
+    def __getitem__(self, idx):
+        return self._features[idx], self._targets[idx]
+
+    def features(self):
+        return self._features.clone()
+
+    def f_plot(self, x=np.linspace(-1, 1, 201), f=None, z=None, show_data=False, subplot=None):
+        if not f:
+            f = self.f
+        if z is None:
+            z = f(x)
+        if subplot:
+            plt.subplot(*subplot)
+        plt.plot(x, z)
+        if show_data:
+            plt.plot(self._features, self._targets, 'k.')
+        if not subplot:
+            plt.show()
+
+
 def main():
-    data = TestData1()
-    data.f_plot(show_data=True)
+    data1 = TestData1()
+    data1.f_plot(show_data=True)
+    data2 = TestData2()
+    data2.f_plot(show_data=True)
 
 
 if __name__ == "__main__":

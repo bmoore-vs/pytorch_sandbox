@@ -3,7 +3,7 @@ import torch
 # from torch import nn
 from torch.utils.data import DataLoader
 
-from test_data import TestData1
+from test_data import TestData1, TestData2
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -69,10 +69,15 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using {device} device")
 
-    training_data = TestData1(1)
-    testing_data = TestData1(2)
-
-    model = SimpleFFNN(2, 1, 100)
+    test = 2
+    if test == 1:
+        training_data = TestData1(1)
+        testing_data = TestData1(2)
+        model = SimpleFFNN(2, 1, 10)
+    if test == 2:
+        training_data = TestData2(1)
+        testing_data = TestData2(2)
+        model = SimpleFFNN(1, 1, 10)
 
     training_data.f_plot(show_data=True, subplot=(3, 1, 1))
 
