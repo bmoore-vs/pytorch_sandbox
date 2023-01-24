@@ -27,20 +27,27 @@ class TestData1(Dataset):
     def features(self):
         return self._features.clone()
 
-    def f_plot(self, f=None, show_data=False):
+    def f_plot(self, support=np.linspace(-1, 1, 201), f=None, z=None, show_data=False, subplot=None):
         if not f:
             f = self.f
-        support = np.linspace(-1, 1, 101)
         x, y = np.meshgrid(support, support)
-        z = f((x, y))
+        if z is None:
+            z = f((x, y))
+        if subplot:
+            plt.subplot(*subplot)
         plt.pcolor(support, support, z)
         plt.colorbar()
         plt.axis('square')
         if show_data:
             plt.plot(self._features[0], self._features[1], 'w.')
-        plt.show()
+        if not subplot:
+            plt.show()
+
+
+def main():
+    data = TestData1()
+    data.f_plot(show_data=True)
 
 
 if __name__ == "__main__":
-    data = TestData1()
-    data.f_plot(show_data=True)
+    main()
