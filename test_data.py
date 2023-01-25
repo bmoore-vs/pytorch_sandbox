@@ -47,13 +47,15 @@ class TestData1(Dataset):
 class TestData2(Dataset):
     @staticmethod
     def f(x):
-        return (x - 0.5) * x * (x + 0.2)
+        return 10* (x - 0.5) * x * (x + 0.75)
 
     def __init__(self, seed=0, transform=None, target_transform=None):
         self.transform = transform
         self.target_transform = target_transform
+        rstate = torch.random.seed()
         torch.random.manual_seed(seed)
         self._features = 2 * torch.rand(20) - 1
+        torch.random.manual_seed(rstate)
         self._targets = self.f(self._features)
 
     def __len__(self):
@@ -73,6 +75,7 @@ class TestData2(Dataset):
         if subplot:
             plt.subplot(*subplot)
         plt.plot(x, z)
+        plt.grid(True)
         if show_data:
             plt.plot(self._features, self._targets, 'k.')
         if not subplot:

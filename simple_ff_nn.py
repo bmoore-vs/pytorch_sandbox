@@ -1,4 +1,6 @@
 import os
+import sys
+
 import torch
 # from torch import nn
 from torch.utils.data import DataLoader
@@ -20,6 +22,8 @@ class SimpleFFNN(torch.nn.Module):
         )
 
     def forward(self, x):
+        if self.N_INPUT == 1:
+            x = x.reshape(x.shape[0], -1)
         return self.layers(x)
 
     def grid_output(self, support):
@@ -43,9 +47,7 @@ def train_loop(dataloader, model, loss_fn, optimizer):
         loss.backward()
         optimizer.step()
 
-        if batch % 100 == 0:
-            loss, current = loss.item(), batch * len(X)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+    print(f"training loss: {loss.item():>7f}")
 
 
 def test_loop(dataloader, model, loss_fn):
@@ -69,7 +71,7 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using {device} device")
 
-    test = 2
+    test = int(sys.argv[1])
     if test == 1:
         training_data = TestData1(1)
         testing_data = TestData1(2)
@@ -79,26 +81,34 @@ def main():
         testing_data = TestData2(2)
         model = SimpleFFNN(1, 1, 10)
 
+    print(f"Model structure: {model}\n\n")
+    for name, param in model.named_parameters():
+        print(f"Layer: {name} | Size: {param.size()} | Values : {param} \n")
+
     training_data.f_plot(show_data=True, subplot=(3, 1, 1))
 
     out = model.grid_output(torch.linspace(-1, 1, 201))
-    training_data.f_plot(z=out, subplot=(3, 1, 2))
+    training_data.f_plot(z=out, show_data=True, subplot=(3, 1, 2))
 
-    training_dataloader = DataLoader(training_data, batch_size=8)
+    training_dataloader = DataLoader(training_data, batch_size=10)
     testing_dataloader = DataLoader(testing_data, batch_size=8)
 
     loss_fn = torch.nn.MSELoss()
-    learning_rate = 1e-3
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-2, momentum=0.9, nesterov=True)
 
     epochs = 100
+    print('Training:')
     for i in range(epochs):
-        print(f"Epoch {i + 1}\n-------------------------------")
         train_loop(training_dataloader, model, loss_fn, optimizer)
-        test_loop(testing_dataloader, model, loss_fn)
+        # test_loop(testing_dataloader, model, loss_fn)
+
+    for name, param in model.named_parameters():
+        print(f"Layer: {name} | Size: {param.size()} | Values : {param} \n")
+    print('Optimizer state:')
+    print(optimizer.state)
 
     out = model.grid_output(torch.linspace(-1, 1, 201))
-    training_data.f_plot(z=out, subplot=(3, 1, 3))
+    training_data.f_plot(z=out, show_data=True, subplot=(3, 1, 3))
 
     plt.show()
 
